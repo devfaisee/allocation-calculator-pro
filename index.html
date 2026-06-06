@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO Optimization -->
+  <title>Verynt Pro - Portfolio Allocation & Rebalancing Calculator</title>
+  <meta name="description" content="Calculate asset allocations, manage investment portfolio targets, and generate rebalancing trade recommendations instantly online. 100% private in-browser tool.">
+  <meta name="keywords" content="portfolio allocation tool, allocation calculator, portfolio rebalancer, asset allocation calculator, rebalance stocks bonds crypto, investment rebalancing">
+  
+  <!-- FontAwesome & Custom CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="./style.css">
+  
+  <!-- Google AdSense Test Script (ca-pub-3940256099942544) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3940256099942544" crossorigin="anonymous"></script>
+  <script src="./rewarded-ads.js"></script>
+  <!-- Vercel Web Analytics -->
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="brand" style="display: flex; align-items: center; gap: 0.75rem;">
+        <svg class="brand-logo-svg" width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.55)); transition: transform 0.3s ease;">
+          <defs>
+            <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#8B5CF6" />
+              <stop offset="100%" stop-color="#06B6D4" />
+            </linearGradient>
+          </defs>
+          <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" stroke="url(#logo-grad)" stroke-width="8" fill="rgba(124, 92, 246, 0.05)" />
+          <path d="M50,22 L75,37 L75,63 L50,78 L25,63 L25,37 Z" fill="url(#logo-grad)" opacity="0.85" />
+          <polygon points="50,38 58,45 58,55 50,62 42,55 42,45" fill="#ffffff" />
+        </svg>
+        <span style="font-weight: 750; font-size: 1.5rem; letter-spacing: -0.75px; background: linear-gradient(135deg, #ffffff 40%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Verynt Pro</span>
+        <span class="brand-badge">Utility Sandbox</span>
+      </div>
+      <div class="header-nav" style="display: flex; align-items: center; gap: 1.5rem;">
+        <a href="https://verynt.com" class="back-link" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: color 0.2s;" onmouseover="this.style.color='#8B5CF6'" onmouseout="this.style.color='var(--text-muted)'">← Portal Hub</a>
+        <div class="privacy-indicator" title="All portfolio values and calculations occur purely locally in your browser memory. We store nothing.">
+          <i class="fa-solid fa-lock text-cyan"></i>
+          <span>100% Client-Side</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <h1>Portfolio Allocation & Rebalancing</h1>
+    <p>Distribute assets across target weights, identify deviations, and calculate the exact buy or sell trades needed to restore balance.</p>
+  </section>
+
+  <!-- Main Workspace -->
+  <main class="tool-container">
+    <div class="tool-grid">
+      
+      <!-- Input Panel (Assets Management) -->
+      <section class="panel-card dropzone-card">
+        <div class="card-header">
+          <h2 class="panel-title"><i class="fa-solid fa-coins text-cyan"></i> Portfolio Asset List</h2>
+          <p class="panel-subtitle">Manage your holdings and allocation target percentages below.</p>
+        </div>
+
+        <div class="asset-inputs-wrapper">
+          
+          <!-- Add Asset Form -->
+          <form id="add-asset-form" class="add-asset-inline-form" onsubmit="event.preventDefault();">
+            <div class="form-row">
+              <input type="text" id="asset-name" placeholder="e.g. US Equities" required />
+              <input type="number" id="asset-target" placeholder="Target %" min="0" max="100" required />
+              <input type="number" id="asset-balance" placeholder="Current Balance ($)" min="0" step="0.01" required />
+              <button type="submit" class="action-btn-sm" title="Add Asset">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </form>
+
+          <div class="allocation-summary-row">
+            <div class="allocation-total-bar">
+              <div class="total-bar-label">Total Allocated Target: <span id="allocated-pct-text">0%</span></div>
+              <div class="progress-track">
+                <div id="allocated-pct-fill" class="progress-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+            <div id="pct-warning" class="pct-warning-text" style="display: none;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span>Targets must sum to 100% to display recommendations.</span>
+            </div>
+          </div>
+
+          <!-- Dynamic Assets Table -->
+          <div class="assets-table-container">
+            <table class="assets-list-table">
+              <thead>
+                <tr>
+                  <th>Asset Name</th>
+                  <th>Target %</th>
+                  <th>Current Balance</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="assets-table-body">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="quick-templates">
+            <span class="quick-title">Quick Templates:</span>
+            <button id="template-classic" class="quick-btn">Classic 60/40 Portfolio</button>
+            <button id="template-allweather" class="quick-btn">All Weather Portfolio</button>
+            <button id="template-crypto" class="quick-btn">Crypto / High Growth</button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Dashboard Results Panel -->
+      <section class="panel-card results-card">
+        <div class="card-header">
+          <h2 class="panel-title"><i class="fa-solid fa-chart-pie text-purple"></i> Rebalancing Report</h2>
+          <p class="panel-subtitle">Live analytics, deviations, and trades summary.</p>
+        </div>
+
+        <div id="calc-empty-state" class="empty-profile">
+          <div class="pulse-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <p>Add assets or load a template on the left to calculate rebalancing metrics.</p>
+        </div>
+
+        <div id="calc-report-content" class="ats-report" style="display: none;">
+          
+          <!-- Portfolio Value Row -->
+          <div class="ats-score-row" style="background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <div class="total-portfolio-box">
+              <span class="ats-score-lbl" style="font-size: 0.75rem; letter-spacing: 0.05em;">Total Portfolio Value</span>
+              <span id="total-portfolio-val" style="font-size: 2.2rem; font-weight: 850; color: #ffffff; display: block; margin-top: 0.25rem;">$0.00</span>
+            </div>
+          </div>
+
+          <!-- Visual Allocations Bars -->
+          <div class="diagnostics-log">
+            <h4 class="log-title">Allocation Analysis (Target vs. Current)</h4>
+            <div id="allocations-comparison-list" class="comparison-bars-grid">
+              <!-- Dynamically populated progress comparisons -->
+            </div>
+          </div>
+
+          <!-- Rebalancing Trades List -->
+          <div class="text-preview-box">
+            <h4 class="preview-title">Suggested Trades (Rebalance)</h4>
+            <div class="table-container">
+              <table class="params-table">
+                <thead>
+                  <tr>
+                    <th>Asset Name</th>
+                    <th>Current %</th>
+                    <th>Target %</th>
+                    <th>Action Required</th>
+                  </tr>
+                </thead>
+                <tbody id="trades-table-body">
+                  <!-- Trade suggestions -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Sponsor Ad Space -->
+    <div class="portal-ad-banner">
+      <div class="ad-banner-badge">SPONSORED (TEST AD)</div>
+      <ins class="adsbygoogle"
+           style="display:block; width:100%; min-height:90px;"
+           data-ad-client="ca-pub-3940256099942544"
+           data-ad-slot="9876543210"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+           (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <span class="footer-text">&copy; 2026 Verynt Pro. 100% Client-Side Asset Rebalancer.</span>
+      <div class="footer-links">
+        <a href="#" onclick="event.preventDefault(); alert('100% Private Client Memory: Your holdings, assets, target allocations, and balances are stored strictly in your browser session thread. No database or tracking servers are used.');">Data Privacy policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
